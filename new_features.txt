@@ -19,3 +19,4 @@ When viewing, updating, or deleting a single user Requires
     the bearer to either be that user, or an admin
     Added tests
     
+Added Jobs Model and Tests
