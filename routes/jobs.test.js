@@ -90,110 +90,45 @@ describe("GET /jobs", function () {
     });
   });
 
-  // test("nameLike param filters results to jobs with a name that has the passed string anywhere in it", async function () {
-  //   let resp = await request(app).get("/jobs").query({nameLike:'c1'});
-  //   expect(resp.body).toEqual({
-  //     jobs:
-  //       [
-  //         {
-  //           handle: "c1",
-  //           name: "C1",
-  //           description: "Desc1",
-  //           numEmployees: 1,
-  //           logoUrl: "http://c1.img",
-  //         }
-  //       ],
-  //   });
+  test("title param filters results to jobs with a title that has the passed string anywhere in it", async function () {
+    const jobs0Title = jobs[1].title;
+    let resp = await request(app).get("/jobs").query({ title: jobs[1].title});
+    expect(resp.body).toEqual({
+      jobs:
+        [jobs[1]],
+    });
 
-  //   resp = await request(app).get("/jobs").query({ nameLike: 'c' });
-  //   expect(resp.body).toEqual({
-  //     jobs:
-  //       [
-  //         {
-  //           handle: "c1",
-  //           name: "C1",
-  //           description: "Desc1",
-  //           numEmployees: 1,
-  //           logoUrl: "http://c1.img",
-  //         },
-  //         {
-  //           handle: "c2",
-  //           name: "C2",
-  //           description: "Desc2",
-  //           numEmployees: 2,
-  //           logoUrl: "http://c2.img",
-  //         },
-  //         {
-  //           handle: "c3",
-  //           name: "C3",
-  //           description: "Desc3",
-  //           numEmployees: 3,
-  //           logoUrl: "http://c3.img",
-  //         },
-  //       ],
-  //   });
+    resp = await request(app).get("/jobs").query({ title: 'job' });
+    expect(resp.body).toEqual({
+      jobs: jobs,
+    });
 
-  // });
+  });
 
-  // test("minEmployee/maxEmployee param filters results", async function () {
-  //   let resp = await request(app).get("/jobs").query({ minEmployees: 2 });
-  //   expect(resp.body).toEqual({
-  //     jobs:
-  //       [
-  //         {
-  //           handle: "c2",
-  //           name: "C2",
-  //           description: "Desc2",
-  //           numEmployees: 2,
-  //           logoUrl: "http://c2.img",
-  //         },
-  //         {
-  //           handle: "c3",
-  //           name: "C3",
-  //           description: "Desc3",
-  //           numEmployees: 3,
-  //           logoUrl: "http://c3.img",
-  //         },
-  //       ],
-  //   });
+  test("minSalary param filters results", async function () {
+    let resp = await request(app).get("/jobs").query({ minSalary: 2000 });
+    expect(resp.body).toEqual({
+      jobs: [ jobs[1], jobs[2] ],
+    });
 
-  //   resp = await request(app).get("/jobs").query({ maxEmployees: 2 });
-  //   expect(resp.body).toEqual({
-  //     jobs:
-  //       [
-  //         {
-  //           handle: "c1",
-  //           name: "C1",
-  //           description: "Desc1",
-  //           numEmployees: 1,
-  //           logoUrl: "http://c1.img",
-  //         },
-  //         {
-  //           handle: "c2",
-  //           name: "C2",
-  //           description: "Desc2",
-  //           numEmployees: 2,
-  //           logoUrl: "http://c2.img",
-  //         }
-  //       ],
-  //   });
+  });
 
 
-  //   resp = await request(app).get("/jobs").query({ minEmployees: 2, maxEmployees: 2 });
-  //   expect(resp.body).toEqual({
-  //     jobs:
-  //       [
-  //         {
-  //           handle: "c2",
-  //           name: "C2",
-  //           description: "Desc2",
-  //           numEmployees: 2,
-  //           logoUrl: "http://c2.img",
-  //         }
-  //       ],
-  //   });
-  // });
+  test("hasEquity param filters results", async function () {
+    let resp = await request(app).get("/jobs").query({ hasEquity: true });
+    expect(resp.body).toEqual({
+      jobs: [ jobs[1], jobs[2] ],
+    });
+  });
 
+  test("bad request with invalid data", async function () {
+    const resp = await request(app)
+      .get("/jobs")
+      .query({
+        minSalary: 'not-a-number',
+      })
+    expect(resp.statusCode).toEqual(400);
+  });
 
   test("fails: test next() handler", async function () {
     // there's no normal failure event which will cause this route to fail ---
@@ -251,7 +186,7 @@ describe("PATCH /jobs/:id", function () {
       job: { ...jobs[0], title: "Brand New" },
     });
   });
-  
+
   test("unauth non admin users", async function () {
     const resp = await request(app)
       .patch(`/jobs/${jobs[0].id}`)

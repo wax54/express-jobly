@@ -33,6 +33,8 @@ class Job {
     }
 
 
+
+
     /** Find all jobs.
      *
      * Returns [{ id, title, salary, equity, companyHandle }, ...]
@@ -45,6 +47,33 @@ class Job {
            ORDER BY company_handle`);
         return jobsRes.rows;
     }
+
+
+    /** Find all companies that match the criteria.
+     * @param { Object } criteria an object with title, salary, and/or equity properties on it
+     * ex.
+     * {title: {
+     *  like: 'h'
+     *  },
+     *  salary: {
+     *  min: 1000
+     *  },
+     * equity: {
+     *  minExclusive: 0
+     *  }
+     * Returns [{ id, title, salary, equity, companyHandle}, ...]
+     * */
+
+    static async search(criteria) {
+        const { whereClause, values } = sqlForSearch(criteria, {});
+        const jobsRes = await db.query(
+            `SELECT id, title, salary, equity, company_handle AS "companyHandle"
+           FROM jobs
+           WHERE ${whereClause}
+           ORDER BY company_handle`, values);
+        return jobsRes.rows;
+    }
+
 
     /** Given a id, return data about job.
      *

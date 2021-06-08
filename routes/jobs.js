@@ -12,6 +12,8 @@ const Job = require("../models/job");
 const jobNewSchema = require("../schemas/jobNew.json");
 const jobUpdateSchema = require("../schemas/jobUpdate.json");
 
+const jobQuerySchema = require("../schemas/jobQuery.json");
+
 const router = new express.Router();
 
 
@@ -43,27 +45,41 @@ router.post("/", ensureIsAdmin, async function (req, res, next) {
  *   { jobs: [ { id, title, salary, equity, logoUrl }, ...] }
  *
  * Can filter on provided search filters:
- * - minEmployees
- * - maxEmployees
- * - titleLike (will find case-insensitive, partial matches)
+ * - minSalary
+ * - hasEquity
+ * - title (will find case-insensitive, partial matches)
  *
  * Authorization required: none
  */
 
 router.get("/", async function (req, res, next) {
   try {
-    const {minEmployees, maxEmployees, titleLike} = req.query;
+    let { title, minSalary, hasEquity } = req.query;
     let jobs;
-    if(minEmployees || maxEmployees || titleLike){
-      jobs = await Job.search({ 
-                                        equity: { 
-                                          min: minEmployees, 
-                                          max: maxEmployees
-                                        }, 
-                                        title:{ 
-                                          like: titleLike
-                                        }
-                                      });
+
+    if(title || minSalary || hasEquity){
+      //turn the query string into a Boolean
+      hasEquity = hasEquity === 'true';
+      //if there is a minSalary, parse it into an int
+      if(minSalary)   minSalary = parseInt(minSalary);
+
+      const validator = jsonschema.validate({ title, hasEquity, minSalary }, jobQuerySchema);
+      if (!validator.valid) {
+        const errs = validator.errors.map(e => e.stack);
+        throw new BadRequestError(errs);
+      }
+
+      const searchObject = {
+        title: {
+          like: title
+        },
+        salary: {
+          min: minSalary
+        }
+      }
+      if (hasEquity) searchObject.equity = { minExclusive: 0 };
+
+      jobs = await Job.search(searchObject);
     } else {
       jobs = await Job.findAll();
     }
@@ -112,7 +128,6 @@ router.patch("/:id", ensureIsAdmin, async function (req, res, next) {
     const job = await Job.update(req.params.id, req.body);
     return res.json({ job });
   } catch (err) {
-    console.log(err);
     return next(err);
   }
 });

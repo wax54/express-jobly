@@ -113,8 +113,8 @@ describe("GET /companies", function () {
     });
   });
 
-  test("nameLike param filters results to companies with a name that has the passed string anywhere in it", async function () {
-    let resp = await request(app).get("/companies").query({nameLike:'c1'});
+  test("name param filters results to companies with a name that has the passed string anywhere in it", async function () {
+    let resp = await request(app).get("/companies").query({name:'c1'});
     expect(resp.body).toEqual({
       companies:
         [
@@ -128,7 +128,7 @@ describe("GET /companies", function () {
         ],
     });
 
-    resp = await request(app).get("/companies").query({ nameLike: 'c' });
+    resp = await request(app).get("/companies").query({ name: 'c' });
     expect(resp.body).toEqual({
       companies:
         [

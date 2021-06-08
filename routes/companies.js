@@ -45,23 +45,23 @@ router.post("/", ensureIsAdmin, async function (req, res, next) {
  * Can filter on provided search filters:
  * - minEmployees
  * - maxEmployees
- * - nameLike (will find case-insensitive, partial matches)
+ * - name (will find case-insensitive, partial matches)
  *
  * Authorization required: none
  */
 
 router.get("/", async function (req, res, next) {
   try {
-    const {minEmployees, maxEmployees, nameLike} = req.query;
+    const {minEmployees, maxEmployees, name} = req.query;
     let companies;
-    if(minEmployees || maxEmployees || nameLike){
+    if(minEmployees || maxEmployees || name){
       companies = await Company.search({ 
                                         numEmployees: { 
                                           min: minEmployees, 
                                           max: maxEmployees
                                         }, 
                                         name:{ 
-                                          like: nameLike
+                                          like: name
                                         }
                                       });
     } else {

@@ -64,10 +64,20 @@ function sqlForSearch(criteria, jsToSql = {}) {
           queries.push(`"${jsToSql[colName] || colName}">=$${idx}`);
           values.push(value.min);
           idx++;
+        }else if (value.minExclusive !== undefined) {
+          queries.push(`"${jsToSql[colName] || colName}">$${idx}`);
+          values.push(value.minExclusive);
+          idx++;
         }
         if (value.max !== undefined) {
-          if (value.min > value.max) throw new BadRequestError(`${colName} min cannot be greater than max`);
+          if (value.min > value.max || value.minExclusive >= value.max) throw new BadRequestError(`${colName} min cannot be greater than max`);
           queries.push(`"${jsToSql[colName] || colName}"<=$${idx}`);
+          values.push(value.max);
+          idx++;
+        }
+        if (value.maxExclusive !== undefined) {
+          if (value.min >= value.maxExclusive || value.minExclusive >= value.maxExclusive) throw new BadRequestError(`${colName} min cannot be greater than max`);
+          queries.push(`"${jsToSql[colName] || colName}"<$${idx}`);
           values.push(value.max);
           idx++;
         }

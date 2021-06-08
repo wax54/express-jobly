@@ -8,13 +8,19 @@ const {
   commonBeforeEach,
   commonAfterEach,
   commonAfterAll,
-  jobIds
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
 beforeEach(commonBeforeEach);
 afterEach(commonAfterEach);
 afterAll(commonAfterAll);
+
+const defaultJobs = [
+  {title:'job1', salary:1000, equity: 1.0, companyHandle:'c1'},
+  {title:'job2', salary:2000, equity: .5, companyHandle:'c2'},
+  {title:'job3', salary:3000, equity: 0, companyHandle:'c3'}
+];
+
 
 const newJob = {
   title: "New",
@@ -49,116 +55,110 @@ describe("create", function () {
 });
 
 
-// /************************************** search */
+/************************************** search */
 
-// describe("search", function () {
-//   test("works: filters by name", async function () {
-//     let companies = await Job.search({
-//                                 name: {
-//                                   like: 'c1'
-//                                 }
-//                               });
-//     expect(companies).toEqual([
-//       {
-//         id: "c1",
-//         name: "C1",
-//         description: "Desc1",
-//         numEmployees: 1,
-//         logoUrl: "http://c1.img",
-//       },
-//     ]);
-//   });
+describe("search", function () {
+  test("works: filters by title", async function () {
+    let companies = await Job.search({
+                                title: {
+                                  like: defaultJobs[0].title
+                                }
+                              });
+    expect(companies).toEqual([
+      {
+        ...defaultJobs[0],
+        id: expect.any(Number),
+        equity: '1.0'
+      },
+    ]);
+  });
 
-//   test("works: filters by partial name", async function () {
-//     let companies = await Job.search({
-//       name: {
-//         like: 'c'
-//       }
-//     });
-//     expect(companies).toEqual([
-//       {
-//         id: "c1",
-//         name: "C1",
-//         description: "Desc1",
-//         numEmployees: 1,
-//         logoUrl: "http://c1.img",
-//       },
-//       {
-//         id: "c2",
-//         name: "C2",
-//         description: "Desc2",
-//         numEmployees: 2,
-//         logoUrl: "http://c2.img",
-//       },
-//       {
-//         id: "c3",
-//         name: "C3",
-//         description: "Desc3",
-//         numEmployees: 3,
-//         logoUrl: "http://c3.img",
-//       },
-//     ]);
-//   });
+  test("works: filters by partial title", async function () {
+    let companies = await Job.search({
+      title: {
+        like: 'job'
+      }
+    });
+    expect(companies).toEqual([
+      {
+        ...defaultJobs[0],
+        id: expect.any(Number),
+        equity: '1.0'
+      },
+      {
+        ...defaultJobs[1],
+        id: expect.any(Number),
+        equity: '0.5'
+      },
+      {
+        ...defaultJobs[2],
+        id: expect.any(Number),
+        equity: '0'
+      },
+    ]);
+  });
 
-//   test("works: filters by employee min inclusively", async function () {
-//     let companies = await Job.search({
-//       numEmployees: {
-//         min: 1
-//       }
-//     });
-//     expect(companies).toEqual([
-//       {
-//         id: "c1",
-//         name: "C1",
-//         description: "Desc1",
-//         numEmployees: 1,
-//         logoUrl: "http://c1.img",
-//       },
-//       {
-//         id: "c2",
-//         name: "C2",
-//         description: "Desc2",
-//         numEmployees: 2,
-//         logoUrl: "http://c2.img",
-//       },
-//       {
-//         id: "c3",
-//         name: "C3",
-//         description: "Desc3",
-//         numEmployees: 3,
-//         logoUrl: "http://c3.img",
-//       },
-//     ]);
-//   });
-//   test("works: filters by employee max inclusively", async function () {
-//     let companies = await Job.search({
-//       numEmployees: {
-//         max: 1
-//       }
-//     });
-//     expect(companies).toEqual([
-//       {
-//         id: "c1",
-//         name: "C1",
-//         description: "Desc1",
-//         numEmployees: 1,
-//         logoUrl: "http://c1.img",
-//       },
-//     ]);
-//   });
+  test("works: filters by min salary inclusively", async function () {
+    let companies = await Job.search({
+      salary: {
+        min: 2000
+      }
+    });
+    expect(companies).toEqual([
 
-//   test("works: filters by all at once", async function () {
-//     let companies = await Job.search({
-//       numEmployees: {
-//         min: 1,
-//         max: 1
-//       },
-//       name:{ like: 'c2'}
-//     });
-//     expect(companies).toEqual([
-//     ]);
-//   });
-// });
+      {
+        ...defaultJobs[1],
+        id: expect.any(Number),
+        equity: '0.5'
+      },
+      {
+        ...defaultJobs[2],
+        id: expect.any(Number),
+        equity: '0'
+      },
+    ]);
+  });
+  test("works: filters by equity exclusively", async function () {
+    let companies = await Job.search({
+      equity: {
+        minExclusive: 0
+      }
+    });
+    expect(companies).toEqual([
+      {
+        ...defaultJobs[0],
+        id: expect.any(Number),
+        equity: '1.0'
+      },
+      {
+        ...defaultJobs[1],
+        id: expect.any(Number),
+        equity: '0.5'
+      },
+    ]);
+  });
+
+  test("works: filters by all at once", async function () {
+    let companies = await Job.search({
+      equity: {
+        minExclusive: 0,
+      },
+      salary:{ 
+        min: 1500
+      },
+      title: { 
+        like: 'job' 
+      }
+    });
+    expect(companies).toEqual([
+      {
+        ...defaultJobs[1],
+        id: expect.any(Number),
+        equity: '0.5'
+      }
+    ]);
+  });
+});
 
 
 /************************************** findAll */
