@@ -9,3 +9,10 @@ Added Filtering to companies get all route
 Requires admin privledges to create, update and delete a comp
     Viewing comps is unchanged
     added tests
+
+
+Requires admin privledges to create and view all users
+    Viewing comps is unchanged
+    added tests
+
+    
