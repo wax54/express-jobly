@@ -20,3 +20,5 @@ When viewing, updating, or deleting a single user Requires
     Added tests
     
 Added Jobs Model and Tests
+
+Added Jobs routes and Tests
