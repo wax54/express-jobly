@@ -1,0 +1,11 @@
+Added Documentation and tests for /helpers/sql
+
+Added sqlForSearch to /helpers/sql 
+    Updated Docs and tests
+
+Added Filtering to companies get all route 
+    Added tests
+
+Requires admin privledges to create, update and delete a comp
+    Viewing comps is unchanged
+    added tests

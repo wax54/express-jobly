@@ -2,7 +2,7 @@
 
 const db = require("../db");
 const { BadRequestError, NotFoundError } = require("../expressError");
-const { sqlForPartialUpdate } = require("../helpers/sql");
+const { sqlForPartialUpdate, sqlForSearch } = require("../helpers/sql");
 
 /** Related functions for companies. */
 
@@ -43,6 +43,39 @@ class Company {
 
     return company;
   }
+
+
+  /** Find all companies that match the criteria.
+   * @param { Object } criteria an object with numEmployees, and/or name properties on it
+   * ex.
+   * {numEmployees: {
+   *    min: 10,
+   *    max: 100
+   *    },
+   *  name: {
+   *  like:"net"
+   * }
+   * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
+   * */
+
+  static async search(criteria) {
+    const { whereClause, values } = sqlForSearch(
+      criteria,
+      {
+        numEmployees: "num_employees"
+      });
+    const companiesRes = await db.query(
+      `SELECT handle,
+                  name,
+                  description,
+                  num_employees AS "numEmployees",
+                  logo_url AS "logoUrl"
+           FROM companies
+           WHERE ${whereClause}
+           ORDER BY name`, values);
+    return companiesRes.rows;
+  }
+
 
   /** Find all companies.
    *
