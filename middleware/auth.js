@@ -57,9 +57,28 @@ function ensureIsAdmin(req, res, next) {
   }
 }
 
+/** Middleware to use when a user is trying to access information about themselves
+ *        must be an admin, or themselves to view
+ *
+ * If not, raises Unauthorized.
+ */
+
+function ensureIsAdminOrSelf(req, res, next) {
+  try {
+    const user = res.locals.user;
+    if (!user) throw new UnauthorizedError();
+    const uname = req.params.username;
+
+    if ((user.username !== uname) && !user.isAdmin) throw new UnauthorizedError();
+    return next();
+  } catch (err) {
+    return next(err);
+  }
+}
 
 module.exports = {
   authenticateJWT,
   ensureLoggedIn,
   ensureIsAdmin,
+  ensureIsAdminOrSelf,
 };

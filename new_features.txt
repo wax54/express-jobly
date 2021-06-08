@@ -13,6 +13,9 @@ Requires admin privledges to create, update and delete a comp
 
 Requires admin privledges to create and view all users
     Viewing comps is unchanged
-    added tests
+    Added tests
 
+When viewing, updating, or deleting a single user Requires 
+    the bearer to either be that user, or an admin
+    Added tests
     
