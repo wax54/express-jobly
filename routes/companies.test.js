@@ -241,21 +241,18 @@ describe("GET /companies/:handle", function () {
         name: "C1",
         jobs: [
           {
-            companyHandle : "c1",
             equity : "0",
             id: expect.any(Number),
             salary : 1000,
             title : "job1",
             },
           {
-            companyHandle : "c1",
             equity : "0.2",
             id: expect.any(Number),
             salary : 2000,
             title : "job2",
           },
           {
-            companyHandle : "c1",
             equity : "0.3",
             id: expect.any(Number),
             salary : 3000,

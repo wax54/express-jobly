@@ -84,6 +84,7 @@ router.get("/", async function (req, res, next) {
 router.get("/:handle", async function (req, res, next) {
   try {
     const company = await Company.get(req.params.handle);
+    company.jobs = company.jobs.map(({ id, title, salary, equity }) => ({ id, title, salary, equity }))
     return res.json({ company });
   } catch (err) {
     return next(err);
