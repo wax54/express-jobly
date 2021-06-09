@@ -50,21 +50,29 @@ class Job {
 
 
     /** Find all companies that match the criteria.
-     * @param { Object } criteria an object with title, salary, and/or equity properties on it
+     * @param { Object } criteria an object with title, minSalary, and/or hasEquity properties on it
      * ex.
-     * {title: {
-     *  like: 'h'
-     *  },
-     *  salary: {
-     *  min: 1000
-     *  },
-     * equity: {
-     *  minExclusive: 0
-     *  }
+     * {
+     *  title: 'h',
+     *  minSalary: 1000,
+     *  hasEquity: true
+     * }
      * Returns [{ id, title, salary, equity, companyHandle}, ...]
      * */
 
-    static async search(criteria) {
+    static async search(query) {
+        const { title, minSalary, hasEquity } = query;
+        const criteria = {
+                    title: {
+                        like: title
+                        },
+                    salary: {
+                        min: minSalary
+                        }
+                    };
+
+        if (hasEquity) criteria.equity = { minExclusive: 0 };
+
         const { whereClause, values } = sqlForSearch(criteria, {});
         const jobsRes = await db.query(
             `SELECT id, title, salary, equity, company_handle AS "companyHandle"

@@ -208,6 +208,15 @@ describe("get", function () {
     expect(company).toEqual({
       handle: "c1",
       name: "C1",
+      jobs : [{
+          companyHandle : "c1",
+          equity : "1.0",
+          id : expect.any(Number),
+          salary : 1000,
+          title : "job1",
+          },
+        ],
+
       description: "Desc1",
       numEmployees: 1,
       logoUrl: "http://c1.img",

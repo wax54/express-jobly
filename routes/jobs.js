@@ -58,28 +58,22 @@ router.get("/", async function (req, res, next) {
     let jobs;
 
     if(title || minSalary || hasEquity){
+
+      
       //turn the query string into a Boolean
       hasEquity = hasEquity === 'true';
       //if there is a minSalary, parse it into an int
       if(minSalary)   minSalary = parseInt(minSalary);
 
-      const validator = jsonschema.validate({ title, hasEquity, minSalary }, jobQuerySchema);
+      const query = {title, hasEquity, minSalary};
+
+      const validator = jsonschema.validate(query, jobQuerySchema);
       if (!validator.valid) {
         const errs = validator.errors.map(e => e.stack);
         throw new BadRequestError(errs);
       }
 
-      const searchObject = {
-        title: {
-          like: title
-        },
-        salary: {
-          min: minSalary
-        }
-      }
-      if (hasEquity) searchObject.equity = { minExclusive: 0 };
-
-      jobs = await Job.search(searchObject);
+      jobs = await Job.search(query);
     } else {
       jobs = await Job.findAll();
     }

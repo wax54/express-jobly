@@ -60,9 +60,7 @@ describe("create", function () {
 describe("search", function () {
   test("works: filters by title", async function () {
     let companies = await Job.search({
-                                title: {
-                                  like: defaultJobs[0].title
-                                }
+                                title:  defaultJobs[0].title
                               });
     expect(companies).toEqual([
       {
@@ -74,11 +72,7 @@ describe("search", function () {
   });
 
   test("works: filters by partial title", async function () {
-    let companies = await Job.search({
-      title: {
-        like: 'job'
-      }
-    });
+    let companies = await Job.search({title:  'job'});
     expect(companies).toEqual([
       {
         ...defaultJobs[0],
@@ -100,9 +94,7 @@ describe("search", function () {
 
   test("works: filters by min salary inclusively", async function () {
     let companies = await Job.search({
-      salary: {
-        min: 2000
-      }
+      minSalary : 2000
     });
     expect(companies).toEqual([
 
@@ -120,9 +112,7 @@ describe("search", function () {
   });
   test("works: filters by equity exclusively", async function () {
     let companies = await Job.search({
-      equity: {
-        minExclusive: 0
-      }
+      hasEquity : true
     });
     expect(companies).toEqual([
       {
@@ -140,15 +130,9 @@ describe("search", function () {
 
   test("works: filters by all at once", async function () {
     let companies = await Job.search({
-      equity: {
-        minExclusive: 0,
-      },
-      salary:{ 
-        min: 1500
-      },
-      title: { 
-        like: 'job' 
-      }
+      hasEquity: true,
+      minSalary: 1500,
+      title: 'job' 
     });
     expect(companies).toEqual([
       {

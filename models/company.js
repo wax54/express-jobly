@@ -103,7 +103,7 @@ class Company {
    **/
 
   static async get(handle) {
-    const companyRes = await db.query(
+    const companyResProm = db.query(
           `SELECT handle,
                   name,
                   description,
@@ -112,11 +112,17 @@ class Company {
            FROM companies
            WHERE handle = $1`,
         [handle]);
+    const jobsResProm = db.query(
+      `SELECT id, title, salary, equity, company_handle AS "companyHandle"
+           FROM jobs
+           WHERE company_handle = $1`,
+      [handle]);
+    const [companyRes, jobsRes] = await Promise.all([companyResProm, jobsResProm]);
 
     const company = companyRes.rows[0];
-
     if (!company) throw new NotFoundError(`No company: ${handle}`);
-
+    //if company add all the jobs (or an empty array if no jobs)
+    company.jobs = jobsRes.rows;
     return company;
   }
 
