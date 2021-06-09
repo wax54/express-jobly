@@ -13,7 +13,8 @@ const { BCRYPT_WORK_FACTOR } = require("../config.js");
 
 /** Related functions for users. */
 
-class User {
+class User { 
+
   /** authenticate user with username, password.
    *
    * Returns { username, first_name, last_name, email, is_admin }
@@ -98,21 +99,37 @@ class User {
 
   /** Find all users.
    *
-   * Returns [{ username, first_name, last_name, email, is_admin }, ...]
+   * Returns [{ username, first_name, last_name, email, is_admin, jobs: [jobId, jobId, ...] }, ...]
    **/
 
   static async findAll() {
     const result = await db.query(
-          `SELECT username,
-                  first_name AS "firstName",
-                  last_name AS "lastName",
-                  email,
-                  is_admin AS "isAdmin"
-           FROM users
+          `SELECT u.username,
+                  u.first_name AS "firstName",
+                  u.last_name AS "lastName",
+                  u.email,
+                  u.is_admin AS "isAdmin",
+                  a.job_id AS "jobId"
+           FROM users AS u
+           JOIN applications AS a ON u.username = a.username
            ORDER BY username`,
     );
 
-    return result.rows;
+    const users = result.rows.reduce( async (acc, next) => {
+      const {username, jobId } = next;
+      if (acc[username]){
+        acc[username].jobs.push(jobId);
+      } else {
+        acc[username] = next;
+        acc[username].jobId = undefined;
+        acc[username].jobs = [ jobId ];
+      }
+    }, {});
+    const finalUsers = [];
+    for(username in users) finalUsers.push(users[username]);
+    
+    
+    return finalUsers;
   }
 
   /** Given a username, return data about user.
@@ -124,7 +141,7 @@ class User {
    **/
 
   static async get(username) {
-    const userRes = await db.query(
+    const userResProm = db.query(
           `SELECT username,
                   first_name AS "firstName",
                   last_name AS "lastName",
@@ -135,7 +152,17 @@ class User {
         [username],
     );
 
+    const jobsResProm = db.query(
+      `SELECT j.id, j.title, j.company_handle as "companyHandle"
+           FROM jobs AS j
+           JOIN applications AS a ON j.id = a.job_id
+           WHERE a.username = $1`,
+      [username],
+    );
+    const [userRes, jobsRes] = await Promise.all(userResProm, jobsResProm);
+
     const user = userRes.rows[0];
+    user.jobs = jobsRes.rows;
 
     if (!user) throw new NotFoundError(`No user: ${username}`);
 
@@ -188,6 +215,26 @@ class User {
 
     delete user.password;
     return user;
+  }
+
+
+  /** applies for job; returns undefined. throws error if username, or jobId doesn't exist */
+
+  static async applyForJob(username, jobId){
+    try{
+      let result = await db.query(
+        `INSERT INTO applications(username, job_id)
+            VALUES($1, $2)`,
+        [username, jobId],
+      );
+    } catch(e){
+      if(e.code = 'refernce not exist'){
+        throw new BadRequestError(`username or jobId does not exist`);
+      } else if (e.code = 'p_key violations') {
+        throw new BadRequestError(`user already applied for job`);
+      }
+      throw e
+    }
   }
 
   /** Delete given user from database; returns undefined. */

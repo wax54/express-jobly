@@ -104,6 +104,28 @@ router.patch("/:username", ensureIsAdminOrSelf, async function (req, res, next) 
 });
 
 
+
+/** POST /[username]/jobs/[jobId] => { applied: jobId }
+ *
+ * Returns { applied: jobId }
+ *
+ * Authorization required: admin or your account
+ **/
+
+router.patch("/:username/jobs/:jobId", 
+  ensureIsAdminOrSelf, 
+  async function (req, res, next) {
+    try {
+      const { username, jobId } = req.params;
+      await User.applyForJob(username, jobId);
+      return res.json({ applied: jobId });
+    } catch (err) {
+      return next(err);
+    }
+  }
+);
+
+
 /** DELETE /[username]  =>  { deleted: username }
  *
  * Authorization required: admin or your account
