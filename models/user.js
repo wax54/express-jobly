@@ -3,6 +3,7 @@
 const db = require("../db");
 const bcrypt = require("bcrypt");
 const { sqlForPartialUpdate } = require("../helpers/sql");
+const Application = require("./application");
 const {
   NotFoundError,
   BadRequestError,
@@ -103,33 +104,33 @@ class User {
    **/
 
   static async findAll() {
-    const result = await db.query(
-          `SELECT u.username,
-                  u.first_name AS "firstName",
-                  u.last_name AS "lastName",
-                  u.email,
-                  u.is_admin AS "isAdmin",
-                  a.job_id AS "jobId"
-           FROM users AS u
-           JOIN applications AS a ON u.username = a.username
-           ORDER BY username`,
-    );
+    let users = await User.getAll();
+    //applications should be an object like { username: [jobId,...], ...}
+    const applications = await Application.getAll();
+    
+    users = users.map((user) => {
+      user.jobs = applications[user.username] || [];
+      return user;
+    });
 
-    const users = result.rows.reduce( async (acc, next) => {
-      const {username, jobId } = next;
-      if (acc[username]){
-        acc[username].jobs.push(jobId);
-      } else {
-        acc[username] = next;
-        acc[username].jobId = undefined;
-        acc[username].jobs = [ jobId ];
-      }
-    }, {});
-    const finalUsers = [];
-    for(username in users) finalUsers.push(users[username]);
-    
-    
-    return finalUsers;
+    return users;
+  }
+
+  /** Gets all User data only from users table.
+ *
+ * Returns [{ username, first_name, last_name, email, is_admin}, ...]
+ **/
+  static async getAll() {
+    const result = await db.query(
+      `SELECT username,
+            first_name AS "firstName",
+            last_name AS "lastName",
+            email,
+            is_admin AS "isAdmin"
+      FROM users
+      ORDER BY username`,
+    );
+    return result.rows;
   }
 
   /** Given a username, return data about user.
@@ -221,20 +222,7 @@ class User {
   /** applies for job; returns undefined. throws error if username, or jobId doesn't exist */
 
   static async applyForJob(username, jobId){
-    try{
-      let result = await db.query(
-        `INSERT INTO applications(username, job_id)
-            VALUES($1, $2)`,
-        [username, jobId],
-      );
-    } catch(e){
-      if(e.code = 'refernce not exist'){
-        throw new BadRequestError(`username or jobId does not exist`);
-      } else if (e.code = 'p_key violations') {
-        throw new BadRequestError(`user already applied for job`);
-      }
-      throw e
-    }
+      Application.create({ username, jobId });
   }
 
   /** Delete given user from database; returns undefined. */
