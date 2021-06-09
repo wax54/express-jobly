@@ -78,7 +78,7 @@ function sqlForSearch(criteria, jsToSql = {}) {
         if (value.maxExclusive !== undefined) {
           if (value.min >= value.maxExclusive || value.minExclusive >= value.maxExclusive) throw new BadRequestError(`${colName} min cannot be greater than max`);
           queries.push(`"${jsToSql[colName] || colName}"<$${idx}`);
-          values.push(value.max);
+          values.push(value.maxExclusive);
           idx++;
         }
         if (value.like !== undefined) {

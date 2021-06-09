@@ -42,7 +42,7 @@ router.post("/", ensureIsAdmin, async function (req, res, next) {
 });
 
 /** GET /  =>
- *   { jobs: [ { id, title, salary, equity, logoUrl }, ...] }
+ *   { jobs: [ { id, title, salary, equity }, ...] }
  *
  * Can filter on provided search filters:
  * - minSalary

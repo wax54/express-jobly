@@ -1,7 +1,7 @@
 "use strict";
 const { application } = require("express");
 const db = require("../db");
-const { BadRequestError } = require("../expressError");
+const { BadRequestError, NotFoundError } = require("../expressError");
 const Application = require("./application");
 const {
     commonBeforeAll,
@@ -76,21 +76,33 @@ describe("create", function () {
             expect(err instanceof BadRequestError).toBeTruthy();
         }
     });
-    test("bad request with nonexistent jobid", async function () {
+    test("Not Found Error with nonexistent jobid", async function () {
         try {
             await Application.create({ ...testApplication, jobId: 0 });
             fail();
         } catch (err) {
-            expect(err instanceof BadRequestError).toBeTruthy();
+            expect(err instanceof NotFoundError).toBeTruthy();
         }
     });
-    test("bad request with nonexistent username", async function () {
+    test("Not Found Error with nonexistent username", async function () {
         try {
             await Application.create({ ...testApplication, username: 'trash' });
             fail();
         } catch (err) {
+            expect(err instanceof NotFoundError).toBeTruthy();
+        }
+    });
 
-            expect(err instanceof BadRequestError).toBeTruthy();
+    test("fails: test last error throw", async function () {
+        // there's no normal failure event which will cause this route to fail ---
+        // thus making it hard to test that the error-handler works with it. This
+        // should cause an error, all right :)
+        await db.query("DROP TABLE applications CASCADE");
+        try {
+            await Application.create(testApplication);
+            fail();
+        } catch (err) {
+            expect(err.severity).toEqual("ERROR");
         }
     });
 });

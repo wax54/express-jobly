@@ -44,7 +44,7 @@ router.post("/", ensureIsAdmin, async function (req, res, next) {
 });
 
 
-/** GET / => { users: [ {username, firstName, lastName, email }, ... ] }
+/** GET / => { users: [ {username, firstName, lastName, email, jobs:[]}, ... ] }
  *
  * Returns list of all users.
  *
@@ -63,7 +63,7 @@ router.get("/", ensureIsAdmin, async function (req, res, next) {
 
 /** GET /[username] => { user }
  *
- * Returns { username, firstName, lastName, isAdmin }
+ * Returns { username, firstName, lastName, isAdmin , jobs: []}
  *
  * Authorization required: admin or your account
  **/
@@ -112,13 +112,13 @@ router.patch("/:username", ensureIsAdminOrSelf, async function (req, res, next) 
  * Authorization required: admin or your account
  **/
 
-router.patch("/:username/jobs/:jobId", 
+router.post("/:username/jobs/:jobId", 
   ensureIsAdminOrSelf, 
   async function (req, res, next) {
     try {
       const { username, jobId } = req.params;
       await User.applyForJob(username, jobId);
-      return res.json({ applied: jobId });
+      return res.status(201).json({ applied: jobId });
     } catch (err) {
       return next(err);
     }

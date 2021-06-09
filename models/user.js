@@ -142,6 +142,7 @@ class User {
    **/
 
   static async get(username) {
+
     const userResProm = db.query(
           `SELECT username,
                   first_name AS "firstName",
@@ -160,12 +161,12 @@ class User {
            WHERE a.username = $1`,
       [username],
     );
-    const [userRes, jobsRes] = await Promise.all(userResProm, jobsResProm);
+    const [ userRes, jobsRes ] = await Promise.all([userResProm, jobsResProm]);
 
     const user = userRes.rows[0];
+    if (!user) throw new NotFoundError(`No user: ${username}`);
     user.jobs = jobsRes.rows;
 
-    if (!user) throw new NotFoundError(`No user: ${username}`);
 
     return user;
   }
@@ -222,7 +223,7 @@ class User {
   /** applies for job; returns undefined. throws error if username, or jobId doesn't exist */
 
   static async applyForJob(username, jobId){
-      Application.create({ username, jobId });
+      await Application.create({ username, jobId });
   }
 
   /** Delete given user from database; returns undefined. */

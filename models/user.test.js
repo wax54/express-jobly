@@ -1,5 +1,5 @@
 "use strict";
-
+process.env.NODE_ENV = "test";
 const {
   NotFoundError,
   BadRequestError,
@@ -7,11 +7,14 @@ const {
 } = require("../expressError");
 const db = require("../db.js");
 const User = require("./user.js");
+const Application = require("./application.js");
+
 const {
   commonBeforeAll,
   commonBeforeEach,
   commonAfterEach,
   commonAfterAll,
+  jobIds
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -115,6 +118,7 @@ describe("findAll", function () {
         username: "u1",
         firstName: "U1F",
         lastName: "U1L",
+        jobs: [],
         email: "u1@email.com",
         isAdmin: false,
       },
@@ -122,6 +126,7 @@ describe("findAll", function () {
         username: "u2",
         firstName: "U2F",
         lastName: "U2L",
+        jobs: [],
         email: "u2@email.com",
         isAdmin: false,
       },
@@ -138,6 +143,24 @@ describe("get", function () {
       username: "u1",
       firstName: "U1F",
       lastName: "U1L",
+      jobs: [],
+      email: "u1@email.com",
+      isAdmin: false,
+    });
+  });
+
+  test("works with jobs", async function () {
+    await Application.create({username:"u1", jobId:jobIds[0]});
+
+    let user = await User.get("u1");
+    expect(user).toEqual({
+      username: "u1",
+      firstName: "U1F",
+      lastName: "U1L",
+      jobs: [{companyHandle: 'c1',
+          id: jobIds[0],
+          title: "job1"
+        }],
       email: "u1@email.com",
       isAdmin: false,
     });
@@ -154,6 +177,57 @@ describe("get", function () {
 });
 
 /************************************** update */
+
+
+/************************************** update */
+
+describe("applyForJob", function () {
+
+  test("works", async function () {
+    await User.applyForJob('u1', jobIds[0]);
+    const user = await User.get('u1');
+    expect(user.jobs.length).toBe(1);
+    expect(user.jobs[0].id).toEqual(jobIds[0]);
+  });
+
+  test("works: set password", async function () {
+    let job = await User.update("u1", {
+      password: "new",
+    });
+    expect(job).toEqual({
+      username: "u1",
+      firstName: "U1F",
+      lastName: "U1L",
+      email: "u1@email.com",
+      isAdmin: false,
+    });
+    const found = await db.query("SELECT * FROM users WHERE username = 'u1'");
+    expect(found.rows.length).toEqual(1);
+    expect(found.rows[0].password.startsWith("$2b$")).toEqual(true);
+  });
+
+  test("not found if no such user", async function () {
+    try {
+      await User.update("nope", {
+        firstName: "test",
+      });
+      fail();
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
+
+  test("bad request if no data", async function () {
+    expect.assertions(1);
+    try {
+      await User.update("c1", {});
+      fail();
+    } catch (err) {
+      expect(err instanceof BadRequestError).toBeTruthy();
+    }
+  });
+});
+
 
 describe("update", function () {
   const updateData = {

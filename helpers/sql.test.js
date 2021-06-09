@@ -78,6 +78,27 @@ describe("sqlForSearch", function () {
 
     });
 
+    test("works: minExclusive and maxExclusive functionality", function () {
+        let result = sqlForSearch({ age: { minExclusive: 6 } })
+        expect(result).toEqual({
+            whereClause: '"age">$1',
+            values: [6]
+        });
+
+        result = sqlForSearch({ age: { maxExclusive: 6 } })
+        expect(result).toEqual({
+            whereClause: '"age"<$1',
+            values: [6]
+        });
+        //both together
+        result = sqlForSearch({ age: { maxExclusive: 6, minExclusive: 1 } })
+        expect(result).toEqual({
+            whereClause: '"age">$1 AND "age"<$2',
+            values: [1, 6]
+        });
+
+    });
+
     test("works: like functionality", function () {
         let result = sqlForSearch({ name: { like: 'h' } })
         expect(result).toEqual({
@@ -102,5 +123,22 @@ describe("sqlForSearch", function () {
         expect(() => {
             sqlForSearch({age: {min:10, max: 5}})
         }).toThrow(BadRequestError)
+        
+        expect(() => {
+            sqlForSearch({ age: { minExclusive: 10, maxExclusive: 10 } })
+        }).toThrow(BadRequestError)
+
+        expect(() => {
+            sqlForSearch({ age: { min: 10, maxExclusive: 10 } })
+        }).toThrow(BadRequestError)
+
+        expect(() => {
+            sqlForSearch({ age: { minExclusive: 10, max: 10 } })
+        }).toThrow(BadRequestError)
+
+        expect(sqlForSearch({ age: { min: 10, max: 10 } })).toEqual({
+            whereClause: '"age">=$1 AND "age"<=$2',
+            values: [10,10]
+        });
     });
 });

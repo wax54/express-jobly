@@ -47,7 +47,7 @@ class Application {
             if (e.code === '23505') {
                 throw new BadRequestError(`application already exists`);
             } else if (e.code === '23503') {
-                throw new BadRequestError(`JobId or username does not exist`);
+                throw new NotFoundError(`jobId or username does not exist`);
             }
             throw e;
         }
