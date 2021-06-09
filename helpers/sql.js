@@ -32,10 +32,20 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql={}) {
 }
 
 /** Helper Function: Creates the updating part of SQL using a JS Object
- * sqlForPartialUpdate({'firstName':"leo", age: 6}, {firstName: "first_name"})
- * would return {setCols: '"first_name"=$1, "age"=$2', values: ["leo", 6]}
+ * sqlForPartialUpdate({'firstName':{ like: "leo" }, age: { min: 6 }, state: 'Washington'}, {firstName: "first_name"})
+ * would return {setCols: '"first_name" ILIKE $1, "age">=$2 "state"=$3', values: ["leo", 6, "Washington"]}
  * 
  * Throws error if input empty 
+ * 
+ * criteria -> SQL Cheatsheet
+ * 
+ * {name: 'tony'} => name = 'tony'
+ * {name: {like: 'tony'}} => name ILIKE 'tony'
+ * {age: {min: 1}} => age >= 1
+ * {age: {max: 1}} => age <= 1
+ * {age: {minExclusive: 1}} => age > 1
+ * {age: {maxExclusive: 1}} => age < 1
+ *
  *
  * @param { Object } criteria an object containing the search criteria ex. {"propertyName" : "search value"}
  * @param { Object } jsToSql an optional object that can be supplied to translate the js 
