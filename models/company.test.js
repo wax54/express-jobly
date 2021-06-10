@@ -61,11 +61,7 @@ describe("create", function () {
 
 describe("search", function () {
   test("works: filters by name", async function () {
-    let companies = await Company.search({
-                                name: {
-                                  like: 'c1'
-                                }
-                              });
+    let companies = await Company.search({ name: 'c1' });
     expect(companies).toEqual([
       {
         handle: "c1",
@@ -78,11 +74,7 @@ describe("search", function () {
   });
 
   test("works: filters by partial name", async function () {
-    let companies = await Company.search({
-      name: {
-        like: 'c'
-      }
-    });
+    let companies = await Company.search({name:'c'});
     expect(companies).toEqual([
       {
         handle: "c1",
@@ -110,10 +102,8 @@ describe("search", function () {
 
   test("works: filters by employee min inclusively", async function () {
     let companies = await Company.search({
-      numEmployees: {
-        min: 1
-      }
-    });
+      minEmployees: 1
+      });
     expect(companies).toEqual([
       {
         handle: "c1",
@@ -140,10 +130,8 @@ describe("search", function () {
   });
   test("works: filters by employee max inclusively", async function () {
     let companies = await Company.search({
-      numEmployees: {
-        max: 1
-      }
-    });
+      maxEmployees: 1
+      });
     expect(companies).toEqual([
       {
         handle: "c1",
@@ -157,14 +145,11 @@ describe("search", function () {
 
   test("works: filters by all at once", async function () {
     let companies = await Company.search({
-      numEmployees: {
-        min: 1,
-        max: 1
-      },
-      name:{ like: 'c2'}
+      minEmployees: 1,
+      maxEmployees: 1,
+      name: 'c2'
     });
-    expect(companies).toEqual([
-    ]);
+    expect(companies).toEqual([]);
   });
 });
 

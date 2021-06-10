@@ -11,6 +11,8 @@ const Company = require("../models/company");
 
 const companyNewSchema = require("../schemas/companyNew.json");
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
+const companyQuerySchema = require("../schemas/companyQuery.json");
+
 
 const router = new express.Router();
 
@@ -52,18 +54,22 @@ router.post("/", ensureIsAdmin, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   try {
-    const {minEmployees, maxEmployees, name} = req.query;
+    let {minEmployees, maxEmployees, name} = req.query;
     let companies;
     if(minEmployees || maxEmployees || name){
-      companies = await Company.search({ 
-                                        numEmployees: { 
-                                          min: minEmployees, 
-                                          max: maxEmployees
-                                        }, 
-                                        name:{ 
-                                          like: name
-                                        }
-                                      });
+      //if there is a min/maxEmployees, parse it into an int
+      if (minEmployees) minEmployees = parseInt(minEmployees);
+      if (maxEmployees) maxEmployees = parseInt(maxEmployees);
+
+      const query = { minEmployees, maxEmployees, name };
+      
+      const validator = jsonschema.validate(query, companyQuerySchema);
+      if (!validator.valid) {
+        const errs = validator.errors.map(e => e.stack);
+        throw new BadRequestError(errs);
+      }
+
+      companies = await Company.search(query);
     } else {
       companies = await Company.findAll();
     }

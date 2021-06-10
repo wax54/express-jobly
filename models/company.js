@@ -58,7 +58,17 @@ class Company {
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  static async search(criteria) {
+  static async search(query) {
+    const { minEmployees, maxEmployees, name } = query;
+    const criteria = {
+      numEmployees: {
+        min: minEmployees,
+        max: maxEmployees
+      },
+      name: {
+        like: name
+      }
+    }
     const { whereClause, values } = sqlForSearch(
       criteria,
       {
