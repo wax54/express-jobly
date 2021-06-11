@@ -104,11 +104,12 @@ class User {
    **/
 
   static async findAll() {
-    let users = await User.getAll();
+    const usersProm = User.getAll();
     //applications should be an object like { username: [jobId,...], ...}
-    const applications = await Application.getAll();
-    
-    users = users.map((user) => {
+    const applicationsProm = Application.getAll();
+
+    const [ joblessUsers, applications ] = await Promise.all([usersProm, applicationsProm]);
+    const users = joblessUsers.map((user) => {
       user.jobs = applications[user.username] || [];
       return user;
     });

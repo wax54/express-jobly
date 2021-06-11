@@ -14,7 +14,8 @@ const {
 class Application {
 
     /** get all the applications in the DB
-     * returns [{username: [jobId, ...], ...}]
+     * returns {username: [jobId, ...], ...}
+     * 
      **/
 
     static async getAll() {
@@ -33,7 +34,8 @@ class Application {
     }
 
     /** creates an application in the DB based on the inputted object
-     * returns undefined, or throws error on failiure
+     * @returns undefined 
+     * @note throws expressError on failiure
      **/
 
     static async create({ username, jobId }) {
